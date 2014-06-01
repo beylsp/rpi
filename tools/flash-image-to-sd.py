@@ -198,7 +198,7 @@ if missing:
         print "Please install them."
         sys.exit(EXIT_FAILURE)
 
-system("clear")
+print system("clear").value
 
 # parse command-line options and arguments
 try:

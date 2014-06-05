@@ -10,41 +10,9 @@ import sys
 import urllib2
 import urlparse
 
-from subprocess import Popen
-from subprocess import PIPE
-from collections import namedtuple
+from __init__ import *
 from getopt import getopt
 from getopt import GetoptError
-
-EXIT_SUCCESS = 0
-EXIT_FAILURE = 1
-
-Response = namedtuple('Response', 'returncode value')
-
-def system(command):
-    p = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
-    out, err = p.communicate()
-    return Response(p.returncode, out.rstrip())
-
-def query_yes_no(question, default="yes"):
-    valid = {"yes":"yes", "y":"yes", "ye":"yes", "no":"no", "n":"no"}
-    if default == None:
-        prompt = " [y/n] "
-    elif default == "yes":
-        prompt = " [Y/n] "
-    elif default == "no":
-        prompt = " [y/N] "
-    else:
-        raise ValueError("invalid default answer: '%s'" % default)
-    while 1:
-        print "%s %s"%(question, prompt),
-        choice = raw_input().lower()
-        if default is not None and choice == '':
-            return default
-        elif choice in valid.keys():
-            return valid[choice]
-        else:
-            print "Please respond with 'yes' or 'no' (or 'y' or 'n').\n"
 
 def chunk_report(bytes_so_far, chunk_size, total_size):
     percent = float(bytes_so_far) / total_size
@@ -147,7 +115,7 @@ def device_input():
             verified = "no"
     return device
 
-def install_raspbian(_file):
+def install_image(_file):
     # configure the device to image
     disk = device_input()
     if not _file:
@@ -158,6 +126,7 @@ def install_raspbian(_file):
     print "\nRaspbian is now loaded on your SD card.\n"
 
 def welcome():
+    print system("clear").value
     text = "----------------------------------\n" + \
            "Welcome to Raspbian SD Card Setup.\n" + \
            "----------------------------------\n" + \
@@ -165,7 +134,14 @@ def welcome():
     raw_input(text)
 
 def usage():
-   print "Usage: ./%s [-i|--image file] | [-h|--help]"%os.path.basename(__file__)
+    print "Usage: ./%s [-i|--image file] | [-h|--help]"%os.path.basename(__file__)
+
+def image(image_file=None):
+    welcome()
+    install_image(image_file)
+
+def uboot():
+    welcome()
 
 ###############################################################################
 #
@@ -198,12 +174,9 @@ if missing:
         print "Please install them."
         sys.exit(EXIT_FAILURE)
 
-print system("clear").value
-
 # parse command-line options and arguments
 try:
-    image_file = None
-    opts, args = getopt(sys.argv[1:], "hi:", ["help", "image"])
+    opts, args = getopt(sys.argv[1:], "hiu:", ["help", "image"])
     if args:
         usage()
         sys.exit(EXIT_FAILURE)
@@ -212,16 +185,14 @@ try:
             usage()
             sys.exit(EXIT_SUCCESS)
         elif opt in ("-i", "--image"):
-            image_file = arg
+            image(arg)
+    # default
+    image()
 except GetoptError as e:
     print "Error: %s"%e
     usage()
     sys.exit(EXIT_FAILURE)
-
-# flash the image file
-try:
-    welcome()
-    install_raspbian(image_file)
 except KeyboardInterrupt:
     print
     sys.exit(EXIT_FAILURE)
+

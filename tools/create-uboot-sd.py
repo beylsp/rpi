@@ -10,6 +10,7 @@ import sys
 from __init__ import *
 
 UBOOT_DIR = os.path.join(os.path.dirname(os.getcwd()), 'u-boot')
+UENV = 'uEnv.txt'
 
 def ask(question):
     print question,
@@ -32,11 +33,11 @@ def create_env():
 
 def write_env(env):
     print "\n%s"%env
-    answer = query_yes_no("Do you want to write this environment to 'uEnv.txt'? ")
+    answer = query_yes_no("Do you want to write this environment to '{0}'? ".format(UENV))
     if answer == 'no':
         create_env()
     else:
-        f = open(os.path.join(UBOOT_DIR, 'uEnv.txt'), 'w')
+        f = open(os.path.join(UBOOT_DIR, UENV), 'w')
         f.write(env)
         f.close()
 

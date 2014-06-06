@@ -148,31 +148,7 @@ def uboot():
 # EXECUTION STARTS HERE
 #
 ###############################################################################
-if os.name != 'posix':
-    print "This script only supports posix OS family"
-    sys.exit(EXIT_FAILURE)
-
-# check if root with geteuid and re-launch as sudo if not
-if os.geteuid() != 0:
-    SUDO = "sudo"
-    try:
-        os.execvp(SUDO, [SUDO] + sys.argv)
-    except OSError as e:
-        print "OS Error(%s): %s"%(e.errno, e.strerror)
-        sys.exit(EXIT_FAILURE)
-
-# check if all necessary system utilities are installed
-requirements=["which", "clear", "parted", "grep", "umount", "mount", "cut", "unzip", "dd"]
-missing = []
-for requirement in requirements:
-    response = system("which " + requirement)
-    if response.returncode != 0:
-        missing.append(requirement)
-if missing:
-        print "Error: your operating system does not include all the necessary utilities to continue."
-        print "Missing utilities: " + ' '.join(missing)
-        print "Please install them."
-        sys.exit(EXIT_FAILURE)
+init()
 
 # parse command-line options and arguments
 try:

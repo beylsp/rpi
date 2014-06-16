@@ -8,11 +8,14 @@ from subprocess import Popen
 from subprocess import PIPE
 from collections import namedtuple
 
-__all__ = ['EXIT_SUCCESS', 'EXIT_FAILURE', 'init', 'system', 'query_yes_no',
-           'ask', 'download']
+__all__ = ['EXIT_SUCCESS', 'EXIT_FAILURE', 'ULINE', 'init', 'system', 
+           'query_yes_no', 'ask', 'download']
 
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
+
+def ULINE(n):
+    return '-'*n
 
 Response = namedtuple('Response', 'returncode value')
 
@@ -93,7 +96,7 @@ def download(url, destination=None):
         _abs_file = os.path.join(destination, _file)
         redl = "" # so that redl == "yes" doesn't throw an error
         if os.path.exists(_abs_file):
-            redl = query_yes_no("\nDo you want to download and overwrite {0}? ".format(_file), "no")
+            redl = query_yes_no("Do you want to download and overwrite {0}? ".format(_file), "no")
         if redl == "yes" or not os.path.exists(_abs_file):
             print "Downloading {0} from {1}, please be patient...".format(_file, url.netloc)
             dlFile = open(_abs_file, 'w')

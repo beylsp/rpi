@@ -13,6 +13,7 @@ UBOOT_DIR = os.path.join(os.path.dirname(os.getcwd()), 'u-boot')
 UENV = 'uEnv.txt'
 
 def create_env():
+    print "--> Create uboot environment..."
     DEFAULT_KERNEL_IMG = 'kernel.img'
     ip_addr = ask("Enter Raspberry Pi (fixed) IP: ")
     server_ip = ask("Enter TFTP/NFS Server IP: ")
@@ -32,9 +33,10 @@ def create_env():
           "bootm ${{kloadaddr}} - ${{fdtaddr}}\n" + \
           "uenvcmd=run uenvcmdx\n"
     write_env(env.format(ip_addr, server_ip, nfs_root, gw_ip, mask))
+    print
 
 def write_env(env):
-    print "\n%s"%env
+    print "{0}\n{1}{0}".format(ULINE(80), env)
     path = os.path.join(UBOOT_DIR, UENV)
     answer = query_yes_no("Do you want to write this environment to '{0}'? ".format(path))
     if answer == 'no':
@@ -45,6 +47,7 @@ def write_env(env):
         f.close()
 
 def download_firmware():
+    print "--> Download firmware..."
     url = 'https://github.com/raspberrypi/firmware/blob/master/boot/'
     blobs = ['bootcode.bin', 
              'fixup.dat', 'fixup_cd.dat', 'fixup_x.dat', 
@@ -61,6 +64,7 @@ try:
     init()
     create_env()
     download_firmware()
+    print 'Done!'
 except KeyboardInterrupt:
     print
     sys.exit(EXIT_FAILURE)

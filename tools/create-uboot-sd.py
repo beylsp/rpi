@@ -1,4 +1,4 @@
-																		#!/usr/bin/env python
+#!/usr/bin/env python
 ###############################################################################
 #
 # Script to create u-bootable SD card.
@@ -11,13 +11,6 @@ from __init__ import *
 
 UBOOT_DIR = os.path.join(os.path.dirname(os.getcwd()), 'u-boot')
 UENV = 'uEnv.txt'
-
-def ask(question, default=''):
-    print question,
-    input = raw_input().lower()
-    if not input:
-        return default
-    return input
 
 def create_env():
     DEFAULT_KERNEL_IMG = 'kernel.img'
@@ -51,13 +44,23 @@ def write_env(env):
         f.write(env)
         f.close()
 
+def download_firmware():
+    url = 'https://github.com/raspberrypi/firmware/blob/master/boot/'
+    blobs = ['bootcode.bin', 
+             'fixup.dat', 'fixup_cd.dat', 'fixup_x.dat', 
+             'start.elf', 'start_cd.elf', 'start_x.elf']
+    for blob in blobs:
+        download('{0}?raw=true'.format(os.path.join(url, blob)), UBOOT_DIR)
+
 ###############################################################################
 #
 # EXECUTION STARTS HERE
 #
 ###############################################################################
 try:
+    init()
     create_env()
+    download_firmware()
 except KeyboardInterrupt:
     print
     sys.exit(EXIT_FAILURE)

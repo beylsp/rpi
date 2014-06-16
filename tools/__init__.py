@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 import os
 import sys
+import urllib2
+import urlparse
 
 from subprocess import Popen
 from subprocess import PIPE
 from collections import namedtuple
 
-__all__ = ['EXIT_SUCCESS', 'EXIT_FAILURE', 'init', 'system', 'query_yes_no']
+__all__ = ['EXIT_SUCCESS', 'EXIT_FAILURE', 'init', 'system', 'query_yes_no',
+           'ask', 'download']
 
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
@@ -72,4 +75,54 @@ def query_yes_no(question, default="yes"):
             return valid[choice]
         else:
             print "Please respond with 'yes' or 'no' (or 'y' or 'n').\n"
+
+def ask(question, default=''):
+    print question,
+    input = raw_input().lower()
+    if not input:
+        return default
+    return input
+
+def download(url, destination=None):
+    if not destination:
+        destination = os.getcwd()
+    try:
+        dl = urllib2.urlopen(url)
+        url = urlparse.urlparse(dl.geturl())
+        _file = os.path.basename(url.path)
+        _abs_file = os.path.join(destination, _file)
+        redl = "" # so that redl == "yes" doesn't throw an error
+        if os.path.exists(_abs_file):
+            redl = query_yes_no("\nDo you want to download and overwrite {0}? ".format(_file), "no")
+        if redl == "yes" or not os.path.exists(_abs_file):
+            print "Downloading {0} from {1}, please be patient...".format(_file, url.netloc)
+            dlFile = open(_abs_file, 'w')
+            chunk_read(dl, dlFile, 8192, chunk_report)
+            dlFile.close()
+    except urllib2.HTTPError as e:
+        print e
+        print "HTTP Error(%s): %s"%(e.errno, e.strerror)
+        sys.exit(EXIT_FAILURE)
+
+def chunk_report(bytes_so_far, chunk_size, total_size):
+    percent = float(bytes_so_far) / total_size
+    percent = round(percent*100, 2)
+    print "Downloaded %0.2f of %0.2f MiB (%0.2f%%)\r"% \
+          (float(bytes_so_far)/1048576, float(total_size)/1048576, percent)
+    if bytes_so_far >= total_size:
+        print "\n"
+
+def chunk_read(response, file, chunk_size, report_hook):
+    total_size = response.info().getheader('Content-Length').strip()
+    total_size = int(total_size)
+    bytes_so_far = 0
+    while 1:
+        chunk = response.read(chunk_size)
+        file.write(chunk)
+        bytes_so_far += len(chunk)
+        if not chunk:
+            break
+        if report_hook:
+            report_hook(bytes_so_far, chunk_size, total_size)
+    return bytes_so_far
 

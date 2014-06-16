@@ -1,7 +1,9 @@
 # byte-compiled / optimized / DLL files
 *.py[cod]
+*.py~
 # blobs
 *.elf
 *.dat
 *.bin
+*.txt
 
